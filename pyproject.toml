@@ -1,0 +1,21 @@
+[project]
+name = "modelling-tools"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "jbaker1", email = "jake.baker@burberry.com" }
+]
+requires-python = "~=3.11.11"
+dependencies = [
+    "numpy~=1.23.5",
+    "pandas~=1.5.3",
+    "patsy>=1.0.1",
+]
+
+[project.scripts]
+modelling-tools = "modelling_tools:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
