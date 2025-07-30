@@ -50,7 +50,7 @@ class ModelMatrix:
                     raise ValueError(f"Values for attribute '{filter_attr}' must be a list, got {type(filter_attr_values)}.")
 
         relevant_columns = {
-            col
+            col: attr_dict
             for col, attr_dict in self.features.items()
             if all((filter_attr_name in attr_dict for filter_attr_name in attribute_filters))
         }
