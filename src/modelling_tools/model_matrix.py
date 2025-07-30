@@ -75,7 +75,7 @@ class ModelMatrix:
         if self.datetime_col not in df.columns:
             raise ValueError(f"Date column '{self.datetime_col}' not found in DataFrame.")
 
-        for col in self.other_cols:
+        for col in self.features:
             if col not in df.columns:
                 raise ValueError(f"Column '{col}' not found in DataFrame.")
 
