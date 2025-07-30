@@ -110,10 +110,10 @@ class ModelMatrix:
                 transformed_df[col] = self.apply_transformation(transformed_df[col], attrs["transform"])
 
         return transformed_df
-    
-    def apply_transformation(self, series: pd.Series, transform: Dict[str, Any]) -> pd.Series:
-        """Apply a transformation to a pandas Series."""
+
+    def apply_transformation(self, data: Union[pd.Series, np.ndarray], transform: Dict[str, Any]) -> Union[pd.Series, np.ndarray]:
+        """Apply a transformation to a pandas Series or numpy array."""
         if transform["type"] == "linear":
-            return (series - transform["shift"]) / transform["scale"]
+            return (data - transform["shift"]) / transform["scale"]
         else:
             raise ValueError(f"Unsupported transformation type: {transform['type']}")
