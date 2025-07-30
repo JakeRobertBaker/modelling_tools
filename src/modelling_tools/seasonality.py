@@ -8,7 +8,7 @@ def add_seasonality(
     peroid: float,
     fourier_order: int,
     seasonality_name: str = None,
-)->pd.DataFrame:
+) -> pd.DataFrame:
     """Add seasonality features to the dataframe.
 
     Args:
@@ -21,11 +21,10 @@ def add_seasonality(
     if seasonality_name is None:
         seasonality_name = f"seasonality_peroid_{peroid}"
 
-    # seasonality uses days since epoch
-    day_to_nanosec = 3600 * 24 * int(1e9)
     # convert each date col to nanoseconds since epoch
     dates = df[date_col].to_numpy(dtype=np.int64)
     # convert to days since epoch
+    day_to_nanosec = 3600 * 24 * int(1e9)
     dates = dates / day_to_nanosec
     df["t_seasonality"] = dates
 
