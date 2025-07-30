@@ -88,7 +88,7 @@ class ModelMatrix:
         if auto_scale_time:
             time_start: Timestamp = self.data[self.datetime_col].min()
             time_end: Timestamp = self.data[self.datetime_col].max()
-            datetime_scale: Timedelta = time_start - time_end
+            datetime_scale: Timedelta = time_end - time_start
             datetime_shift = time_start
             self.features[self.datetime_col]["transform"] = {"type": "linear", "scale": datetime_scale, "shift": datetime_shift}
 
