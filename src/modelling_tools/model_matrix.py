@@ -109,7 +109,7 @@ class ModelMatrix:
             if attrs.get("transform"):
                 transformed_df[col] = self.apply_transformation(transformed_df[col], attrs["transform"])
 
-        return transformed_df
+        return transformed_df[self.features.keys()]
 
     def apply_transformation(self, data: Union[pd.Series, np.ndarray], transform: Dict[str, Any]) -> Union[pd.Series, np.ndarray]:
         """Apply a transformation to a pandas Series or numpy array."""
