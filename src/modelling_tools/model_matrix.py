@@ -140,6 +140,8 @@ class ModelMatrix:
 
     def assign_data(self, df: pd.DataFrame, auto_scale_time: bool = True):
         """Assign data to the model matrix."""
+        if self.data_assigned:
+            raise ValueError("Data has already been assigned to the model matrix. Create a new instance to assign new data.")
         self.validate_matrix(df)
         self.data = df.copy()
         self.data_assigned = True
@@ -193,12 +195,12 @@ class ModelMatrix:
 
         if attr["derived"] == "seasonality":
             seasonality_df = seasonality.generate_seasonality(
-                df,
+                df[[attr["time_col"]]],
                 date_col=attr["time_col"],
                 period=attr["period"],
                 fourier_order=attr["fourier_order"],
                 seasonality_name=feature,
-            )
+            ).drop(columns=[attr["time_col"]])
             return seasonality_df
         else:
             raise ValueError(f"Unsupported derived feature type: {attr['derived_feature']} for feature '{feature}'.")
