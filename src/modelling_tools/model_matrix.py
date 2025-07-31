@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from pandas import Timedelta, Timestamp
 
-from modelling_tools.seasonality import add_daily_seasonality, add_weekly_seasonality, add_yearly_seasonality, add_seasonality
+from modelling_tools import seasonality
 
 # JSONSerializable = Union[str, int, float, bool, None, Dict[str, "JSONSerializable"], List["JSONSerializable"]]
 
@@ -85,14 +85,19 @@ class ModelMatrix:
             raise ValueError(f"Feature '{feature_name}' already exists in the model matrix.")
         self.features[feature_name] = attributes
 
-    def add_seasonality_feature(self, period: float, fourier_order: int, seasonality_name: str) -> None:
+    def add_seasonality_feature(self, period: float, fourier_order: int, seasonality_name: str, time_col: str = None) -> None:
+        """Add a derived seasonality feature to the model matrix.
+
+        Args:
+            period (float): Period of the seasonality (in days)
+            fourier_order (int): Order of the Fourier series to use
+            seasonality_name (str): Name for the seasonality column. Defaults to None.
+        """
+        time_col = time_col if time_col else self.datetime_col
+
         self.add_feature(
             seasonality_name,
-            {
-                "derived_feature": "seasonality",
-                "period": period,
-                "fourier_order": fourier_order,
-            },
+            {"derived_feature": "seasonality", "period": period, "fourier_order": fourier_order, "time_col": time_col},
         )
 
     def validate_matrix(self, df: pd.DataFrame):
@@ -150,11 +155,11 @@ class ModelMatrix:
             raise ValueError(f"Date column '{self.datetime_col}' not found in DataFrame.")
 
         if attr["derived_feature"] == "seasonality":
-            seasonality_df = add_seasonality(
+            seasonality_df = seasonality.add_seasonality(
                 df,
-                peroid=attr["period"],
+                date_col=attr["time_col"],
+                period=attr["period"],
                 fourier_order=attr["fourier_order"],
-                date_col=self.datetime_col,
                 seasonality_name=feature,
             )
             return seasonality_df
