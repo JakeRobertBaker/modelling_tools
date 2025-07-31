@@ -59,6 +59,9 @@ class ModelMatrix:
             Dict[str, List]:    get_features({"derived":["seasonal", "new_der_feat"]}) get all derived features of type seasonal or new_der_feat
         """
 
+        if not attribute_filters:
+            return self.features
+
         attribute_filters = [attribute_filters] if isinstance(attribute_filters, str) else attribute_filters
 
         if isinstance(attribute_filters, list):
