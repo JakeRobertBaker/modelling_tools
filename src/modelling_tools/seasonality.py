@@ -5,7 +5,7 @@ import numpy as np
 def add_seasonality(
     df: pd.DataFrame,
     date_col: str,
-    peroid: float,
+    period: float,
     fourier_order: int,
     seasonality_name: str = None,
 ) -> pd.DataFrame:
@@ -13,13 +13,13 @@ def add_seasonality(
 
     Args:
         df (pd.DataFrame): DataFrame containing the date column shape (N, n_cols)
-        peroid (float): Period of the seasonality (in days)
+        period (float): Period of the seasonality (in days)
         fourier_order (int): Order of the Fourier series to use
         date_col (str): Name of the date column in the DataFrame
         seasonality_name (str, optional): Name for the seasonality column. Defaults to None.
     """
     if seasonality_name is None:
-        seasonality_name = f"seasonality_peroid_{peroid}"
+        seasonality_name = f"seasonality_period_{period}"
 
     # convert each date col to nanoseconds since epoch
     dates = df[date_col].to_numpy(dtype=np.int64)
@@ -31,7 +31,7 @@ def add_seasonality(
     # shape (fourier_order)
     n_vals = np.arange(1, fourier_order + 1)
     # shape (fourier order, N)
-    t = np.outer(n_vals, df["t_seasonality"] * 2 * np.pi / peroid)
+    t = np.outer(n_vals, df["t_seasonality"] * 2 * np.pi / period)
 
     # the actual sin and cos features
     sin_col_names = [f"{seasonality_name}_sin_{i}" for i in n_vals]
@@ -51,7 +51,7 @@ def add_daily_seasonality(
 ):
     return add_seasonality(
         df,
-        peroid=1,
+        period=1,
         fourier_order=fourier_order,
         date_col=date_col,
         seasonality_name=seasonality_name,
@@ -66,7 +66,7 @@ def add_weekly_seasonality(
 ):
     return add_seasonality(
         df,
-        peroid=7,
+        period=7,
         fourier_order=fourier_order,
         date_col=date_col,
         seasonality_name=seasonality_name,
@@ -81,7 +81,7 @@ def add_yearly_seasonality(
 ):
     return add_seasonality(
         df,
-        peroid=365.25,
+        period=365.25,
         fourier_order=fourier_order,
         date_col=date_col,
         seasonality_name=seasonality_name,
