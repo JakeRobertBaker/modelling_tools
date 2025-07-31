@@ -144,6 +144,17 @@ class ModelMatrix:
         self.data = df.copy()
         self.data_assigned = True
 
+        # datetime_features = self._get_features(lambda attrs: attrs.get("datetime", False))
+        datetime_features = self.get_features("datetime")
+        for feature in datetime_features:
+            if not pd.api.types.is_datetime64_any_dtype(self.data[feature]):
+                self.data[feature] = pd.to_datetime(self.data[feature], errors="coerce")
+                # mention that col has been converted to datetime
+                print(f"Column '{feature}' has been converted to datetime format.")
+                # mention that this will convert non-datetime values to NaT
+                if self.data[feature].isnull().any():
+                    print(f"Warning: Some values in '{feature}' could not be converted to datetime and are set to NaT.")
+
         if auto_scale_time:
             time_start: Timestamp = self.data[self.datetime_col].min()
             time_end: Timestamp = self.data[self.datetime_col].max()
