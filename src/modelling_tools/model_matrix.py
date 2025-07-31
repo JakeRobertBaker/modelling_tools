@@ -28,14 +28,21 @@ class ModelMatrix:
 
         # by default features are input features
         if isinstance(other_features, list):
-            self.features.update({feature: {"derived_feature": False} for feature in other_features})
+            self.features.update({feature: {"derived": False} for feature in other_features})
         elif isinstance(other_features, dict):
-            self.features.update({feature: {"derived_feature": False, **attr} for feature, attr in other_features.items()})
+            self.features.update({feature: {"derived": False, **attr} for feature, attr in other_features.items()})
 
         self.data_assigned = False
 
     def get_features(self, attribute_filters: Union[List[str], Dict[str, List]] = None) -> Dict[str, Dict[str, Any]]:
-        """Get the features of the model matrix."""
+        """Get the features of the model matrix.
+        
+        attribute_filters is either a List[str] or Dict[str, List].
+
+            when it is List[str] it permits features that have all the attribute keys in the list
+            when it is Dict[str, List] it permits features that have the attribute keys and one of the list of values
+        
+        """
         if attribute_filters is None:
             return self.features
 
@@ -64,7 +71,7 @@ class ModelMatrix:
         if isinstance(attribute_filters, dict):
             return {
                 feature: attr_dict
-                for feature, attr_dict in relevant_features
+                for feature, attr_dict in relevant_features.items()
                 if all(
                     (
                         attr_dict[filter_attr_name] in filter_attr_values
@@ -97,7 +104,7 @@ class ModelMatrix:
 
         self.add_feature(
             seasonality_name,
-            {"derived_feature": "seasonality", "period": period, "fourier_order": fourier_order, "time_col": time_col},
+            {"derived": "seasonality", "period": period, "fourier_order": fourier_order, "time_col": time_col},
         )
 
     def add_daily_seasonality(self, fourier_order: int = 4, seasonality_name: str = "seasonality_daily", time_col: str = None):
@@ -142,7 +149,7 @@ class ModelMatrix:
 
         transformed_df = pd.DataFrame(index=df.index)
 
-        input_features = {col: attrs for col, attrs in self.features.items() if not attrs.get("derived_feature", False)}
+        input_features = {col: attrs for col, attrs in self.features.items() if not attrs.get("derived", False)}
 
         # transform input features
         for feature, attrs in input_features.items():
@@ -152,7 +159,7 @@ class ModelMatrix:
                 transformed_df[feature] = df[feature]
 
         # get derived features
-        derived_features = {col: attrs for col, attrs in self.features.items() if attrs.get("derived_feature", False)}
+        derived_features = {col: attrs for col, attrs in self.features.items() if attrs.get("derived", False)}
         for feature, attrs in derived_features.items():
             derived_feature_df = self._derive_features(df, feature, attrs)
             transformed_df = pd.concat([transformed_df, derived_feature_df], axis=1)
@@ -163,7 +170,7 @@ class ModelMatrix:
         if self.datetime_col not in df.columns:
             raise ValueError(f"Date column '{self.datetime_col}' not found in DataFrame.")
 
-        if attr["derived_feature"] == "seasonality":
+        if attr["derived"] == "seasonality":
             seasonality_df = seasonality.generate_seasonality(
                 df,
                 date_col=attr["time_col"],
