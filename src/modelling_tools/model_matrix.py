@@ -87,6 +87,12 @@ class ModelMatrix:
 
             return self._get_features(filters)
 
+    def get_input_features(self) -> Dict[str, Dict[str, Any]]:
+        return self._get_features(lambda attrs: not attrs.get("derived", False))
+
+    def get_derived_features(self) -> Dict[str, Dict[str, Any]]:
+        return self._get_features(lambda attrs: attrs.get("derived", False))
+
     def add_feature(
         self,
         feature_name: str,
@@ -128,7 +134,7 @@ class ModelMatrix:
         if self.datetime_col not in df.columns:
             raise ValueError(f"Date column '{self.datetime_col}' not found in DataFrame.")
 
-        for feature in self.features:
+        for feature in self.get_input_features().keys():
             if feature not in df.columns:
                 raise ValueError(f"Column '{feature}' not found in DataFrame.")
 
@@ -156,18 +162,15 @@ class ModelMatrix:
 
         transformed_df = pd.DataFrame(index=df.index)
 
-        input_features = {col: attrs for col, attrs in self.features.items() if not attrs.get("derived", False)}
-
         # transform input features
-        for feature, attrs in input_features.items():
+        for feature, attrs in self.get_input_features().items():
             if attrs.get("transform"):
                 transformed_df[feature] = self._transform_feature(df[feature], attrs["transform"])
             else:
                 transformed_df[feature] = df[feature]
 
         # get derived features
-        derived_features = {col: attrs for col, attrs in self.features.items() if attrs.get("derived", False)}
-        for feature, attrs in derived_features.items():
+        for feature, attrs in self.get_derived_features().items():
             derived_feature_df = self._derive_features(df, feature, attrs)
             transformed_df = pd.concat([transformed_df, derived_feature_df], axis=1)
 
