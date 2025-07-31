@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 from pandas import Timedelta, Timestamp
 
+from modelling_tools.seasonality import add_daily_seasonality, add_weekly_seasonality, add_yearly_seasonality, add_seasonality
+
 # JSONSerializable = Union[str, int, float, bool, None, Dict[str, "JSONSerializable"], List["JSONSerializable"]]
 
 
@@ -24,10 +26,11 @@ class ModelMatrix:
         self.datetime_col = datetime_col
         self.features: Dict[str, Dict[str, Any]] = {datetime_col: {"datetime": True}}
 
+        # by default features are input features
         if isinstance(other_features, list):
-            self.features.update({col: {} for col in other_features})
+            self.features.update({feature: {"derived_feature": False} for feature in other_features})
         elif isinstance(other_features, dict):
-            self.features.update(other_features)
+            self.features.update({feature: {"derived_feature": False, **attr} for feature, attr in other_features.items()})
 
         self.data_assigned = False
 
@@ -49,19 +52,19 @@ class ModelMatrix:
                 if not isinstance(filter_attr_values, list):
                     raise ValueError(f"Values for attribute '{filter_attr}' must be a list, got {type(filter_attr_values)}.")
 
-        relevant_columns = {
-            col: attr_dict
-            for col, attr_dict in self.features.items()
+        relevant_features = {
+            feature: attr_dict
+            for feature, attr_dict in self.features.items()
             if all((filter_attr_name in attr_dict for filter_attr_name in attribute_filters))
         }
 
         if isinstance(attribute_filters, list):
-            return relevant_columns
+            return relevant_features
 
         if isinstance(attribute_filters, dict):
             return {
-                col: attr_dict
-                for col, attr_dict in relevant_columns
+                feature: attr_dict
+                for feature, attr_dict in relevant_features
                 if all(
                     (
                         attr_dict[filter_attr_name] in filter_attr_values
@@ -70,14 +73,36 @@ class ModelMatrix:
                 )
             }
 
+    def add_feature(
+        self,
+        feature_name: str,
+        attributes: Dict[str, Any] = None,
+    ) -> None:
+        """Add a feature to the model matrix."""
+        if attributes is None:
+            attributes = {}
+        if feature_name in self.features:
+            raise ValueError(f"Feature '{feature_name}' already exists in the model matrix.")
+        self.features[feature_name] = attributes
+
+    def add_seasonality_feature(self, period: float, fourier_order: int, seasonality_name: str) -> None:
+        self.add_feature(
+            seasonality_name,
+            {
+                "derived_feature": "seasonality",
+                "period": period,
+                "fourier_order": fourier_order,
+            },
+        )
+
     def validate_matrix(self, df: pd.DataFrame):
         """Validate the model matrix against the DataFrame."""
         if self.datetime_col not in df.columns:
             raise ValueError(f"Date column '{self.datetime_col}' not found in DataFrame.")
 
-        for col in self.features:
-            if col not in df.columns:
-                raise ValueError(f"Column '{col}' not found in DataFrame.")
+        for feature in self.features:
+            if feature not in df.columns:
+                raise ValueError(f"Column '{feature}' not found in DataFrame.")
 
     def assign_data(self, df: pd.DataFrame, auto_scale_time: bool = True):
         """Assign data to the model matrix."""
@@ -101,17 +126,42 @@ class ModelMatrix:
         if self.datetime_col not in df.columns:
             raise ValueError(f"Date column '{self.datetime_col}' not found in DataFrame.")
 
-        # Create a copy of the DataFrame to avoid modifying the original
-        transformed_df = df.copy()
+        transformed_df = pd.DataFrame(index=df.index)
 
-        # Apply transformations based on features
-        for col, attrs in self.features.items():
+        input_features = {col: attrs for col, attrs in self.features.items() if not attrs.get("derived_feature", False)}
+
+        # transform input features
+        for feature, attrs in input_features.items():
             if attrs.get("transform"):
-                transformed_df[col] = self.apply_transformation(transformed_df[col], attrs["transform"])
+                transformed_df[feature] = self._transform_feature(df[feature], attrs["transform"])
+            else:
+                transformed_df[feature] = df[feature]
 
-        return transformed_df[self.features.keys()]
+        # get derived features
+        derived_features = {col: attrs for col, attrs in self.features.items() if attrs.get("derived_feature", False)}
+        for feature, attrs in derived_features.items():
+            derived_feature_df = self._derive_features(df, feature, attrs)
+            transformed_df = pd.concat([transformed_df, derived_feature_df], axis=1)
 
-    def apply_transformation(self, data: Union[pd.Series, np.ndarray], transform: Dict[str, Any]) -> Union[pd.Series, np.ndarray]:
+        return transformed_df
+
+    def _derive_features(self, df, feature: str, attr: Dict[str, Any]) -> pd.DataFrame:
+        if self.datetime_col not in df.columns:
+            raise ValueError(f"Date column '{self.datetime_col}' not found in DataFrame.")
+
+        if attr["derived_feature"] == "seasonality":
+            seasonality_df = add_seasonality(
+                df,
+                peroid=attr["period"],
+                fourier_order=attr["fourier_order"],
+                date_col=self.datetime_col,
+                seasonality_name=feature,
+            )
+            return seasonality_df
+        else:
+            raise ValueError(f"Unsupported derived feature type: {attr['derived_feature']} for feature '{feature}'.")
+
+    def _transform_feature(self, data: Union[pd.Series, np.ndarray], transform: Dict[str, Any]) -> Union[pd.Series, np.ndarray]:
         """Apply a transformation to a pandas Series or numpy array."""
         if transform["type"] == "linear":
             return (data - transform["shift"]) / transform["scale"]
