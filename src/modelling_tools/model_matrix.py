@@ -100,13 +100,13 @@ class ModelMatrix:
             {"derived_feature": "seasonality", "period": period, "fourier_order": fourier_order, "time_col": time_col},
         )
 
-    def add_daily_seasonality(self, time_col: str, fourier_order: int = 4, seasonality_name: str = "seasonality_daily"):
+    def add_daily_seasonality(self, fourier_order: int = 4, seasonality_name: str = "seasonality_daily", time_col: str = None):
         self.add_seasonality_feature(period=1, fourier_order=fourier_order, seasonality_name=seasonality_name, time_col=time_col)
 
-    def add_weekly_seasonality(self, time_col: str, fourier_order: int = 3, seasonality_name: str = "seasonality_weekly"):
+    def add_weekly_seasonality(self, fourier_order: int = 3, seasonality_name: str = "seasonality_weekly", time_col: str = None):
         self.add_seasonality_feature(period=7, fourier_order=fourier_order, seasonality_name=seasonality_name, time_col=time_col)
 
-    def add_yearly_seasonality(self, time_col: str, fourier_order: int = 10, seasonality_name: str = "seasonality_yearly"):
+    def add_yearly_seasonality(self, fourier_order: int = 10, seasonality_name: str = "seasonality_yearly", time_col: str = None):
         self.add_seasonality_feature(period=365.25, fourier_order=fourier_order, seasonality_name=seasonality_name, time_col=time_col)
 
     def validate_matrix(self, df: pd.DataFrame):
