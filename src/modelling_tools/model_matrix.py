@@ -4,6 +4,7 @@ import numpy as np
 from pandas import Timedelta, Timestamp
 
 from modelling_tools import seasonality
+from typing import Callable
 
 # JSONSerializable = Union[str, int, float, bool, None, Dict[str, "JSONSerializable"], List["JSONSerializable"]]
 
@@ -34,51 +35,54 @@ class ModelMatrix:
 
         self.data_assigned = False
 
-    def get_features(self, attribute_filters: Union[List[str], Dict[str, List]] = None) -> Dict[str, Dict[str, Any]]:
-        """Get the features of the model matrix.
-        
-        attribute_filters is either a List[str] or Dict[str, List].
-
-            when it is List[str] it permits features that have all the attribute keys in the list
-            when it is Dict[str, List] it permits features that have the attribute keys and one of the list of values
-        
+    def _get_features(self, filters: Callable[[Dict[str, Any]], bool]) -> Dict[str, Dict[str, Any]]:
         """
-        if attribute_filters is None:
-            return self.features
+        Retrieve a dictionary of features that satisfy a given filter function.
 
-        if not isinstance(attribute_filters, (list, dict)):
-            raise ValueError("attribute_filters must be a List[str] or  Dict[str, List].")
+        Args:
+            filters (Callable[[Dict[str, Any]], bool]):
+                A callable that takes a feature's attribute dictionary and returns True if the feature should be included.
 
-        # validate attribute_filters
+        Returns:
+            Dict[str, Dict[str, Any]]:
+                A dictionary mapping feature names to their attribute dictionaries for features that pass the filter.
+        """
+        return {feature: attr_dict for feature, attr_dict in self.features.items() if filters(attr_dict)}
+
+    def get_features(self, attribute_filters: Union[str, List[str], Dict[str, List]] = None) -> Dict[str, Dict[str, Any]]:
+        """Get the features of the model matrix.
+
+        Examples:
+            str:                get_features("derived") get all features with derived attribute and derived attribute != False
+            List[str]:          get_features(["derived", "mode"]) get all features with derived and mode attributes and both attributes != False
+            Dict[str, List]:    get_features({"derived":["seasonal"]}) get all derived features of type seasonal
+            Dict[str, List]:    get_features({"derived":["seasonal", "new_der_feat"]}) get all derived features of type seasonal or new_der_feat
+        """
+
+        attribute_filters = [attribute_filters] if isinstance(attribute_filters, str) else attribute_filters
+
         if isinstance(attribute_filters, list):
-            for filter_attr in attribute_filters:
-                if not isinstance(filter_attr, str):
-                    raise ValueError(f"Filter attribute '{filter_attr}' must be a string.")
-        if isinstance(attribute_filters, dict):
-            for filter_attr, filter_attr_values in attribute_filters.items():
-                if not isinstance(filter_attr_values, list):
-                    raise ValueError(f"Values for attribute '{filter_attr}' must be a list, got {type(filter_attr_values)}.")
+            # validate that all attributes are strings
+            if not all(isinstance(attr, str) for attr in attribute_filters):
+                raise ValueError("All attributes in attribute_filters must be strings.")
 
-        relevant_features = {
-            feature: attr_dict
-            for feature, attr_dict in self.features.items()
-            if all((filter_attr_name in attr_dict for filter_attr_name in attribute_filters))
-        }
+            def filters(attr_dict: Dict[str, Any]) -> bool:
+                return all(attr_dict.get(attr, False) for attr in attribute_filters)
 
-        if isinstance(attribute_filters, list):
-            return relevant_features
+            return self._get_features(filters)
 
-        if isinstance(attribute_filters, dict):
-            return {
-                feature: attr_dict
-                for feature, attr_dict in relevant_features.items()
-                if all(
-                    (
-                        attr_dict[filter_attr_name] in filter_attr_values
-                        for filter_attr_name, filter_attr_values in attribute_filters.items()
-                    )
-                )
-            }
+        elif isinstance(attribute_filters, dict):
+            # validate that all keys are strings
+            if not all(isinstance(key, str) for key in attribute_filters.keys()):
+                raise ValueError("All keys in attribute_filters must be strings.")
+            # validate that all attribute values are lists
+            if not all(isinstance(values, list) for values in attribute_filters.values()):
+                raise ValueError("All values in attribute_filters must be lists.")
+
+            def filters(attr_dict: Dict[str, Any]) -> bool:
+                return all(attr_dict.get(attr) in values for attr, values in attribute_filters.items())
+
+            return self._get_features(filters)
 
     def add_feature(
         self,
