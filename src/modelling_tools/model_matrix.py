@@ -100,6 +100,15 @@ class ModelMatrix:
             {"derived_feature": "seasonality", "period": period, "fourier_order": fourier_order, "time_col": time_col},
         )
 
+    def add_daily_seasonality(self, time_col: str, fourier_order: int = 4, seasonality_name: str = "seasonality_daily"):
+        self.add_seasonality_feature(period=1, fourier_order=fourier_order, seasonality_name=seasonality_name, time_col=time_col)
+
+    def add_weekly_seasonality(self, time_col: str, fourier_order: int = 3, seasonality_name: str = "seasonality_weekly"):
+        self.add_seasonality_feature(period=7, fourier_order=fourier_order, seasonality_name=seasonality_name, time_col=time_col)
+
+    def add_yearly_seasonality(self, time_col: str, fourier_order: int = 10, seasonality_name: str = "seasonality_yearly"):
+        self.add_seasonality_feature(period=365.25, fourier_order=fourier_order, seasonality_name=seasonality_name, time_col=time_col)
+
     def validate_matrix(self, df: pd.DataFrame):
         """Validate the model matrix against the DataFrame."""
         if self.datetime_col not in df.columns:
@@ -155,7 +164,7 @@ class ModelMatrix:
             raise ValueError(f"Date column '{self.datetime_col}' not found in DataFrame.")
 
         if attr["derived_feature"] == "seasonality":
-            seasonality_df = seasonality.add_seasonality(
+            seasonality_df = seasonality.generate_seasonality(
                 df,
                 date_col=attr["time_col"],
                 period=attr["period"],

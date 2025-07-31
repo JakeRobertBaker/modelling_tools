@@ -1,7 +1,7 @@
 from .seasonality import (
-    add_daily_seasonality,
-    add_weekly_seasonality,
-    add_yearly_seasonality,
+    generate_daily_seasonality,
+    generate_weekly_seasonality,
+    generate_yearly_seasonality,
 )
 
 def main() -> None:
@@ -10,8 +10,8 @@ def main() -> None:
     print("Hello from modelling-tools!")
     print(
         (
-            add_daily_seasonality,
-            add_weekly_seasonality,
-            add_yearly_seasonality,
+            generate_daily_seasonality,
+            generate_weekly_seasonality,
+            generate_yearly_seasonality,
         )
     )

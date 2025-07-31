@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 
-def add_seasonality(
+def generate_seasonality(
     df: pd.DataFrame,
     date_col: str,
     period: float,
@@ -43,46 +43,13 @@ def add_seasonality(
     return out_df
 
 
-def add_daily_seasonality(
-    df: pd.DataFrame,
-    date_col: str,
-    fourier_order: int = 4,
-    seasonality_name: str = "seasonality_daily",
-):
-    return add_seasonality(
-        df,
-        period=1,
-        fourier_order=fourier_order,
-        date_col=date_col,
-        seasonality_name=seasonality_name,
-    )
+def generate_daily_seasonality(df: pd.DataFrame, date_col: str, fourier_order: int = 4, seasonality_name: str = "seasonality_daily"):
+    return generate_seasonality(df, period=1, fourier_order=fourier_order, date_col=date_col, seasonality_name=seasonality_name)
 
 
-def add_weekly_seasonality(
-    df: pd.DataFrame,
-    date_col: str,
-    fourier_order: int = 3,
-    seasonality_name: str = "seasonality_weekly",
-):
-    return add_seasonality(
-        df,
-        period=7,
-        fourier_order=fourier_order,
-        date_col=date_col,
-        seasonality_name=seasonality_name,
-    )
+def generate_weekly_seasonality(df: pd.DataFrame, date_col: str, fourier_order: int = 3, seasonality_name: str = "seasonality_weekly"):
+    return generate_seasonality(df, period=7, fourier_order=fourier_order, date_col=date_col, seasonality_name=seasonality_name)
 
 
-def add_yearly_seasonality(
-    df: pd.DataFrame,
-    date_col: str,
-    fourier_order: int = 10,
-    seasonality_name: str = "seasonality_yearly",
-):
-    return add_seasonality(
-        df,
-        period=365.25,
-        fourier_order=fourier_order,
-        date_col=date_col,
-        seasonality_name=seasonality_name,
-    )
+def generate_yearly_seasonality(df: pd.DataFrame, date_col: str, fourier_order: int = 10, seasonality_name: str = "seasonality_yearly"):
+    return generate_seasonality(df, period=365.25, fourier_order=fourier_order, date_col=date_col, seasonality_name=seasonality_name)
