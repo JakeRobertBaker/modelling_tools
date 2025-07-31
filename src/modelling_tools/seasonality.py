@@ -21,8 +21,10 @@ def generate_seasonality(
     if seasonality_name is None:
         seasonality_name = f"seasonality_period_{period}"
 
+    df = df.copy()
+
     # convert each date col to nanoseconds since epoch
-    dates = df[date_col].to_numpy(dtype=np.int64)
+    dates = df[date_col].to_numpy(dtype=np.int64).copy()
     # convert to days since epoch
     day_to_nanosec = 3600 * 24 * int(1e9)
     dates = dates / day_to_nanosec
