@@ -11,10 +11,18 @@ dependencies = [
     "numpy~=1.23.5",
     "pandas~=1.5.3",
     "patsy>=1.0.1",
+    "ydata-profiling>=4.16.1",
 ]
 
 [project.scripts]
 modelling-tools = "modelling_tools:main"
+
+[project.optional-dependencies]
+pymc-modelling = [
+    "arviz>=0.21.0",
+    "pymc>=5.19.0",
+    "xarray~=2024.1.0",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -22,3 +30,10 @@ build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 140
+
+[dependency-groups]
+notebooks = [
+    "ipykernel>=6.30.1",
+]
+
+
