@@ -19,6 +19,7 @@ modelling-tools = "modelling_tools:main"
 [project.optional-dependencies]
 pymc-modelling = [
     "arviz>=0.21.0",
+    "numba>=0.60.0",
     "pymc>=5.19.0",
     "xarray>=2024.3.0",
 ]
