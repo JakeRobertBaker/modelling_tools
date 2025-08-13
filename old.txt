@@ -1,0 +1,5 @@
+pymc-modelling = [
+    "arviz>=0.21.0",
+    "pymc>=5.19.0",
+    "xarray~=2024.1.0",
+]
