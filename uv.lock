@@ -488,7 +488,7 @@ requires-dist = [
     { name = "pandas", specifier = "~=1.5.3" },
     { name = "patsy", specifier = "~=1.0.1" },
     { name = "pymc", marker = "extra == 'pymc-modelling'", specifier = ">=5.19.0" },
-    { name = "xarray", marker = "extra == 'pymc-modelling'", specifier = "~=2024.1.0" },
+    { name = "xarray", marker = "extra == 'pymc-modelling'", specifier = ">=2024.3.0" },
 ]
 provides-extras = ["pymc-modelling"]
 
@@ -938,16 +938,16 @@ wheels = [
 
 [[package]]
 name = "xarray"
-version = "2024.1.1"
+version = "2024.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
     { name = "packaging" },
     { name = "pandas" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1b/ac/6732fc79dccca7611320243bbe68a2bb3f3992744dcea2454e1bd68b6954/xarray-2024.1.1.tar.gz", hash = "sha256:a1ba2d87a74892e213c9c83f4a462dbcdf68212320a4e31b34bd789ba7a64e35", size = 3614037, upload-time = "2024-01-23T22:31:51.227Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/db/ac/9db13d2a6d2e9f72d4d6305ed7796a45ea9cd58f0a4a47d434a276830adf/xarray-2024.3.0.tar.gz", hash = "sha256:5c1db19efdde61db7faedad8fc944f4e29698fb6fbd578d352668b63598bd1d8", size = 3674424, upload-time = "2024-03-29T17:09:00.691Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d4/b5/2af411546a4c2be8d6315bc01be055fbad367bc9c57dbd773ad05db62b1c/xarray-2024.1.1-py3-none-any.whl", hash = "sha256:0bec81303b088c8df4f075e1579c00cfd7e5069688e4434007f0b8d7df17fc1c", size = 1080037, upload-time = "2024-01-23T22:31:48.751Z" },
+    { url = "https://files.pythonhosted.org/packages/f7/fe/c4d15ac730b2bcdd530e4bc6491958c53237eb573dba4eec3ad31ff0519a/xarray-2024.3.0-py3-none-any.whl", hash = "sha256:ca2bc4da2bf2e7879e15862a7a7c3fc76ad19f6a08931d030220cef39a29118d", size = 1134478, upload-time = "2024-03-29T17:08:57.554Z" },
 ]
 
 [[package]]
